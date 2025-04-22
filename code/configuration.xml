@@ -1,5 +1,5 @@
 <configuration>
-  <json_path>../../duel-masters-json/DuelMastersCards.json</json_path>
+  <json_path>../duel-masters-json/DuelMastersCards.json</json_path>
   <producer_text>©2019 Duel Masters Finland</producer_text>
   <print_set>
     <set>DM-13 Eternal Phoenix</set>

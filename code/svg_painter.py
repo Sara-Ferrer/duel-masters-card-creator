@@ -118,7 +118,8 @@ def paint_cost_frame_multi(svg, x, y, fills):
   diameter = get_spec_h(0.012)
   rect_length = diameter * 3.5
   paint_cost_frame_multi_helper1(svg, x, y, fills[0], math.pi/4, rad_inner, rad_outer, rad_dist, diameter, rect_length)
-  paint_cost_frame_multi_helper2(svg, x, y, fills[1], 0, rad_inner, rad_outer, rad_dist, diameter, rect_length)
+  if len(fills) > 1:
+        paint_cost_frame_multi_helper2(svg, x, y, fills[1], 0, rad_inner, rad_outer, rad_dist, diameter, rect_length)
 
 def paint_cost_frame_multi_helper1(svg, x, y, fill, initial_rad, rad_inner, rad_outer, rad_dist, diameter, rect_length):
   lower_outer_points = get_circle_points(rad_outer, initial_rad, rad_dist)
@@ -307,7 +308,16 @@ def get_svg_for_card(svg, row, column, card, producer_text):
   text_fill = get_text_fill(card)
   paint_card_frame(svg, x, y, civ.lower())
   x_image, x_illustrator, x_type_box, x_text_box, width_type_box, x_name, text_width_max = get_offsets(x, card['type'])
-  paint_card_image(svg, x_image, y+get_spec_h(0.133), get_spec_h(0.64), get_spec_h(0.49), card['id'], card['set'])
+  paint_card_image(
+    svg,
+    x_image,
+    y + get_spec_h(0.133),
+    get_spec_h(0.64),
+    get_spec_h(0.49),
+    card['printings'][0]['id'],
+    card['printings'][0]['set']
+)
+
   text_painter.paint_name(svg, x_name, y+get_spec_h(0.065), card['name'], text_width_max, get_spec_h(0.04))
   race = None
   if 'race' in card:
@@ -329,12 +339,43 @@ def get_svg_for_card(svg, row, column, card, producer_text):
   if 'civilizations' in card:
     paint_cost_frame_multi(svg, x+_border_width, y+_border_width, get_fills_for_civs(card['civilizations']))
   text_painter.paint_cost(svg, x+get_spec_w(0.09), y+get_spec_h(0.085), card['cost'], get_spec_h(0.068))
-  paint_illustrator(svg, x_illustrator, y+get_spec_h(0.6425), card['illustrator'], text_fill, get_spec_h(0.02))
+  paint_illustrator(
+      svg,
+      x_illustrator,
+      y + get_spec_h(0.6425),
+      card['printings'][0].get('illustrator', ''),
+      text_fill,
+      get_spec_h(0.02)
+  )
   misc_font_size =  get_spec_h(0.0178)
   paint_publisher(svg, x+get_spec_w(0.85), y+get_spec_h(0.96), text_fill, producer_text, misc_font_size)
-  paint_id(svg, x+get_spec_w(0.945), y+get_spec_h(0.96), text_fill, card['id'], misc_font_size)
-  image_painter.paint_set_logo(svg, x+get_spec_w(0.896), y+get_spec_h(0.915), get_spec_h(0.03), get_spec_h(0.03), card['set'])
-  paint_rarity(svg, x+get_spec_w(0.868), y+get_spec_h(0.953), get_spec_h(0.009), card['rarity'], text_fill, get_fill_for_civilization(civ))
+  paint_id(
+      svg,
+      x + get_spec_w(0.945),
+      y + get_spec_h(0.96),
+      text_fill,
+      card['printings'][0].get('id', ''),
+      misc_font_size
+  )
+
+  image_painter.paint_set_logo(
+    svg,
+    x + get_spec_w(0.896),
+    y + get_spec_h(0.915),
+    get_spec_h(0.03),
+    get_spec_h(0.03),
+    card['printings'][0].get('set', '')
+  )
+  paint_rarity(
+    svg,
+    x + get_spec_w(0.868),
+    y + get_spec_h(0.953),
+    get_spec_h(0.009),
+    card['printings'][0].get('rarity', ''),
+    text_fill,
+    get_fill_for_civilization(civ)
+  )
+
   paint_mana_number(svg, x+get_spec_w(0.5), y+get_spec_h(0.942), civ, text_fill)
   if card['type'] == 'Evolution Creature':
     paint_evolution_sign(svg, x+_border_width-1, y+get_spec_h(0.613))
@@ -378,7 +419,11 @@ def paint_set(cards, producer_text, placeholder_cards, json_factory, initial_out
   for chunk in chunks:
     first = chunk[0]
     last = chunk[-1]
-    output_path = '{0}/{1}-{2}'.format(initial_output_path, get_id_number(first['id']), get_id_number(last['id']))
+    output_path = '{0}/{1}-{2}'.format(
+    initial_output_path,
+    get_id_number(first['printings'][0]['id']),
+    get_id_number(last['printings'][0]['id'])
+)
     if len(chunk) < cards_in_page:
       diff = cards_in_page - len(chunk)
       if diff == len(placeholder_cards):
